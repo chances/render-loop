@@ -1,4 +1,7 @@
 {
+  "name": "@chances/render-loop",
+  "version": "0.1.0",
+  "exports": "./mod.ts",
   "tasks": {
     "lint": "deno lint"
   },
