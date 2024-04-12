@@ -1,4 +1,5 @@
 # Render Loop for Deno
+[![Render Loop CI](https://github.com/chances/render-loop/actions/workflows/deno.yml/badge.svg)](https://github.com/chances/render-loop/actions/workflows/deno.yml)
 
 ## Usage
 
