@@ -1,0 +1,32 @@
+# See: https://github.com/denoland/setup-deno
+name: Render Loop CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Deno
+        # uses: denoland/setup-deno@v1
+        uses: denoland/setup-deno@61fe2df320078202e33d7d5ad347e7dcfa0e8f31  # v1.1.2
+        with:
+          deno-version: v1.x
+
+      - name: Lint Sources
+        run: |
+          deno fmt --check
+          deno lint
+      # TODO: Implement unit tests
+      # - name: Run Tests
+      #   run: deno test -A test/mod.ts
