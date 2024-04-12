@@ -9,7 +9,7 @@ export abstract class RealTimeApp {
  * Manages an application's main render loop.
  * @see [Game Loop](http://gameprogrammingpatterns.com/game-loop.html) (Game Programming Patterns)
  * @remarks Adapted from the [`render_loop`](https://www.shardbox.org/shards/render_loop) Crystal library.
- **/
+ */
 export default class RenderLoop {
   private _frameTime: number;
   private _frames = 0;
@@ -55,10 +55,12 @@ export default class RenderLoop {
       if (!shouldRender) /* Sleep for 1 millisecond. */ setTimeout(loop, 1);
       else {
         const tick = new Tick(this._frameTime, passedTime, startupTime);
-        globalThis.dispatchEvent(new CustomEvent("tick", {
-          cancelable: false,
-          detail: tick
-        }));
+        globalThis.dispatchEvent(
+          new CustomEvent("tick", {
+            cancelable: false,
+            detail: tick,
+          }),
+        );
 
         this.app?.tick(tick);
         this.app?.render();
@@ -87,7 +89,7 @@ export default class RenderLoop {
 /**
  * Time information about the current tick.
  * @remarks Adapted from the [`render_loop`](https://www.shardbox.org/shards/render_loop) Crystal library.
- **/
+ */
 export class Tick {
   constructor(
     /** Desired time span to render a single frame, in seconds. */
@@ -101,7 +103,7 @@ export class Tick {
   /**
    * @returns Desired frame rate, in hertz.
    * @see `RenderLoop.fps` for the *actual* measured frame rate.
-   **/
+   */
   get desiredFrameRate() {
     return 1000 / (this.desiredFrameTime * 1000);
   }

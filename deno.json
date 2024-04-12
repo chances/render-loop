@@ -1,5 +1,9 @@
 {
   "tasks": {
     "lint": "deno lint"
+  },
+  "fmt": {
+    "lineWidth": 120,
+    "proseWrap": "preserve"
   }
 }

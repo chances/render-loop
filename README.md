@@ -18,6 +18,7 @@ Copyright &copy; 2024 Chance Snow. All rights reserved.
 
 ### Attribution
 
-Adapted from the [`render_loop`](https://www.shardbox.org/shards/render_loop) Crystal library, Copyright &copy; 2020 [Joel](https://github.com/da1nerd). Lisenced under the [MIT License](https://github.com/da1nerd/render_loop/blob/master/LICENSE).
+Adapted from the [`render_loop`](https://www.shardbox.org/shards/render_loop) Crystal library, Copyright &copy; 2020 [Joel](https://github.com/da1nerd).
+Lisenced under the [MIT License](https://github.com/da1nerd/render_loop/blob/master/LICENSE).
 
 Informed by Robert Nystrom's book, [Game Programming Patterns](http://gameprogrammingpatterns.com).
