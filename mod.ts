@@ -21,12 +21,12 @@ export default class RenderLoop {
     this._frameTime = 1 / frameRate;
   }
 
-  get isRunning() {
+  get isRunning(): boolean {
     return this._isRunning;
   }
 
   /** @returns The current measures frames per second, in hertz. */
-  get fps() {
+  get fps(): number {
     return this._frames;
   }
 
@@ -104,7 +104,7 @@ export class Tick {
    * @returns Desired frame rate, in hertz.
    * @see `RenderLoop.fps` for the *actual* measured frame rate.
    */
-  get desiredFrameRate() {
+  get desiredFrameRate(): number {
     return 1000 / (this.desiredFrameTime * 1000);
   }
 }
