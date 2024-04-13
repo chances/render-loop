@@ -10,10 +10,10 @@ export abstract class RealTimeApp {
 
 /**
  * Manages an application's main render loop.
- * 
+ *
  * A render loop is automatically stopped when the Deno process receives the
  * `SIGTERM` or `SIGINT` signal (@see `Deno.Signal`).
- * 
+ *
  * _Note_: On Windows only `"SIGINT"` (CTRL+C) is listened to.
  *
  * @see [Game Loop](http://gameprogrammingpatterns.com/game-loop.html) (Game Programming Patterns)
