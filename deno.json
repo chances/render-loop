@@ -1,5 +1,6 @@
 {
   "$schema": "https://github.com/denoland/deno/raw/v1.41.0/cli/schemas/config-file.v1.json",
+  // FIXME: Also include "$schema": "https://jsr.io/schema/config-file.v1.json",
   "name": "@chances/render-loop",
   "version": "0.2.0",
   "exports": "./mod.ts",
