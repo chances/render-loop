@@ -30,8 +30,8 @@ export default class RenderLoop {
     return this._frames;
   }
 
-  start() {
-    if (this._isRunning) return;
+  start(): RenderLoop {
+    if (this._isRunning) return this;
     this._isRunning = true;
     const startupTime = performance.now() / 1000;
 
@@ -79,10 +79,13 @@ export default class RenderLoop {
 
     // Start the loop
     queueMicrotask(loop);
+
+    return this;
   }
 
-  stop() {
+  stop(): RenderLoop {
     this._isRunning = false;
+    return this;
   }
 }
 
