@@ -1,5 +1,7 @@
 # Render Loop for Deno
 
+[![JSR](https://jsr.io/badges/@chances/render-loop)](https://jsr.io/@chances/render-loop)
+[![JSR Score](https://jsr.io/badges/@chances/render-loop/score)](https://jsr.io/@chances/render-loop)
 [![Render Loop CI](https://github.com/chances/render-loop/actions/workflows/deno.yml/badge.svg)](https://github.com/chances/render-loop/actions/workflows/deno.yml)
 
 ## Usage
