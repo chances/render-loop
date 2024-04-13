@@ -1,6 +1,101 @@
 import { assert } from "jsr:@std/assert";
 import * as async from "jsr:@std/async";
 
+/// <reference path="./mod.d.ts" />
+export interface Number extends globalThis.Number {
+  /** @returns The unit of this number, or `Unit.unknown` if unset. */
+  get unit(): Unit;
+  set unit(value: Unit);
+
+  /** @returns This number with the given `unit` assigned. */
+  withUnit(unit: Unit): number;
+
+  /** @section Unit Conversions */
+
+  /** @returns The given `value` converted to milliseconds. */
+  get ms(): number;
+  /** @returns The given `value` converted to seconds. */
+  get seconds(): number;
+}
+interface Performance extends globalThis.Performance {
+  /** Returns a current time from Deno's start in seconds.
+   *
+   * Use the permission flag `--allow-hrtime` to return a precise value.
+   *
+   * @tags allow-hrtime
+   */
+  nowSeconds(): number;
+}
+
+// TODO: Abstract this into a Proxy
+Object.defineProperty(Performance.prototype, "nowSeconds", {
+  get(this: Performance) {
+    const now = this.now() as unknown as Number;
+    now.unit = Unit.milliseconds;
+    return function () {
+      return now.seconds;
+    };
+  },
+});
+
+// TODO: Extract these unit helpers into their own library
+export const enum Unit {
+  unknown,
+  nanoseconds = "ns",
+  milliseconds = "ms",
+  seconds = "s",
+}
+// TODO: Extract these into Proxies
+// TODO: Override `toString` to display units
+const units = new Map<number, Unit>();
+Object.defineProperty(Number.prototype, "unit", {
+  get(this: number) {
+    if (!units.has(this)) return Unit.unknown;
+    return units.get(this);
+  },
+  set(this: number, value: Unit) {
+    units.set(this, value);
+  },
+});
+Object.defineProperty(Number.prototype, "withUnit", {
+  get(this: Number) {
+    return (unit: Unit) => {
+      this.unit = unit;
+      return this;
+    };
+  },
+});
+Object.defineProperty(Number.prototype, "ns", {
+  get(this: number) {
+    const unit = (this as unknown as Number).unit;
+    if (unit === Unit.unknown) return (this as unknown as Number).withUnit(Unit.nanoseconds);
+    if (unit === Unit.nanoseconds) return this;
+    if (unit === Unit.milliseconds) return this * 1e+6;
+    if (unit === Unit.seconds) return (this as unknown as Number).ms * 1e+6;
+    throw new Error(`Unsupported unit: ${unit}`);
+  },
+});
+Object.defineProperty(Number.prototype, "ms", {
+  get(this: number) {
+    const unit = (this as unknown as Number).unit;
+    if (unit === Unit.unknown) return (this as unknown as Number).withUnit(Unit.milliseconds);
+    if (unit === Unit.nanoseconds) return this / 1e+6;
+    if (unit === Unit.milliseconds) return this;
+    if (unit === Unit.seconds) return this * 1000;
+    throw new Error(`Unsupported unit: ${unit}`);
+  },
+});
+Object.defineProperty(Number.prototype, "seconds", {
+  get(this: number) {
+    const unit = (this as unknown as Number).unit;
+    if (unit === Unit.unknown) return (this as unknown as Number).withUnit(Unit.seconds);
+    if (unit === Unit.nanoseconds) return this / 1e+6;
+    if (unit === Unit.milliseconds) return this / 1000;
+    if (unit === Unit.seconds) return this;
+    throw new Error(`Unsupported unit: ${unit}`);
+  },
+});
+
 /** An application that renders scenes in real-time. */
 export abstract class RealTimeApp {
   /** Called at each iteration of the game loop. Used to update real-time application state. */
@@ -30,7 +125,7 @@ export default class RenderLoop {
 
   /** @param frameRate Deisred frame rate, in hertz. */
   constructor(frameRate: number, readonly app?: RealTimeApp) {
-    this._frameTime = 1 / frameRate;
+    this._frameTime = ((1 / frameRate) as unknown as Number).seconds;
 
     // Ensure this render loop is stopped when the app stops
     if (Deno.build.os !== "windows") Deno.addSignalListener("SIGTERM", this._stopIfRunning);
@@ -61,10 +156,10 @@ export default class RenderLoop {
     if (this._isRunning) return this;
     this._isRunning = true;
     this._finished = Promise.withResolvers();
-    const startupTime = performance.now() / 1000;
 
-    let lastTime = performance.now();
-    let unprocessedTime = 0;
+    const startupTime = (performance as Performance).nowSeconds();
+    let lastTime = startupTime;
+    let unprocessedTime = (0 as unknown as Number).seconds;
 
     /**
      * Iterate this render loop at the end of the current event loop iteration.
@@ -79,30 +174,23 @@ export default class RenderLoop {
 
     const loop = async (): Promise<void> => {
       let shouldRender = false;
-      const startTime = performance.now() / 1000;
-      const passedTime = startTime - lastTime;
-      lastTime = startTime;
-
+      const startTime = (performance as Performance).nowSeconds();
+      const passedTime = ((startTime - lastTime) as unknown as Number).withUnit(Unit.seconds);
       unprocessedTime += passedTime;
       this._frameCounter += passedTime;
+      lastTime = startTime;
 
       while (unprocessedTime > this._frameTime) {
         shouldRender = this._isRunning;
         unprocessedTime -= this._frameTime;
       }
 
-      // Delay the render loop for 1 millisecond
+      // Delay the render loop for 1 millisecond and bail from this iteration
       if (!shouldRender) return async.delay(1).then(enqueueLoop);
 
       // Otherwise, tick the render loop
       const tick = new Tick(this._frameTime, passedTime, startupTime);
-      globalThis.dispatchEvent(
-        new CustomEvent("tick", {
-          cancelable: false,
-          detail: tick,
-        }),
-      );
-
+      globalThis.dispatchEvent(new CustomEvent("tick", { cancelable: false, detail: tick }));
       this.app?.tick(tick);
       this.app?.render();
 
@@ -146,7 +234,11 @@ export class Tick {
     readonly frameTime: number,
     /** Time the render loop started, measured from Deno's start, in seconds. */
     readonly startupTime: number,
-  ) {}
+  ) {
+    (this.desiredFrameTime as unknown as Number).unit = Unit.seconds;
+    (this.frameTime as unknown as Number).unit = Unit.seconds;
+    (this.startupTime as unknown as Number).unit = Unit.seconds;
+  }
 
   /**
    * @returns Desired frame rate, in hertz.
