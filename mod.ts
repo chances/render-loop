@@ -240,6 +240,11 @@ export class Tick {
     (this.startupTime as unknown as Number).unit = Unit.seconds;
   }
 
+  /** @param desiredFrameTime Desired time span to render a single frame, in seconds. */
+  static zero(desiredFrameTime: number): Tick {
+    return new Tick(desiredFrameTime, 0, Number.NaN);
+  }
+
   /**
    * @returns Desired frame rate, in hertz.
    * @see `RenderLoop.fps` for the *actual* measured frame rate.
