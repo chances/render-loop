@@ -1,4 +1,4 @@
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "jsr:@std/assert@0.222.1";
 import RenderLoop from "../mod.ts";
 
 Deno.test(async function isRunningTest() {

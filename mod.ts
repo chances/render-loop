@@ -1,5 +1,5 @@
-import { assert } from "jsr:@std/assert";
-import * as async from "jsr:@std/async";
+import { assert } from "jsr:@std/assert@0.222.1";
+import * as async from "jsr:@std/async@0.222.1";
 
 export abstract class RealTimeApp {
   /** Called at each iteration of the game loop. Used to update real-time application state. */
