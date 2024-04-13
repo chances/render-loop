@@ -97,11 +97,11 @@ Object.defineProperty(Number.prototype, "seconds", {
 });
 
 /** An application that renders scenes in real-time. */
-export abstract class RealTimeApp {
+export interface RealTimeApp {
   /** Called at each iteration of the game loop. Used to update real-time application state. */
-  abstract tick(tick: Tick): void;
+  tick(tick: Tick): void;
   /** Called at intervals designated by this app's `RenderLoop`. Used to render the application's scene. */
-  render(): void {}
+  render(): void;
 }
 
 /**
