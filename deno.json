@@ -4,6 +4,10 @@
   "version": "0.2.0",
   "exports": "./mod.ts",
   "description": "A generic and reusable render loop for applications and games.",
+  "imports": {
+    "jsr:@std/assert": "jsr:@std/assert@0.222.1",
+    "jsr:@std/async": "jsr:@std/async@0.222.1"
+  },
   "tasks": {
     "lint": "deno lint",
     "test": "deno test ./test/mod.ts --trace-leaks"
