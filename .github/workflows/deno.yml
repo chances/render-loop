@@ -27,6 +27,5 @@ jobs:
         run: |
           deno fmt --check
           deno lint
-      # TODO: Implement unit tests
-      # - name: Run Tests
-      #   run: deno test -A test/mod.ts
+      - name: Run Tests
+        run: deno test -A test/mod.ts --trace-leaks

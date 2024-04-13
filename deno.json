@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "exports": "./mod.ts",
   "tasks": {
-    "lint": "deno lint"
+    "lint": "deno lint",
+    "test": "deno test ./test/mod.ts --trace-leaks"
   },
   "fmt": {
     "lineWidth": 120,

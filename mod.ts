@@ -1,3 +1,6 @@
+import { assert } from "jsr:@std/assert";
+import * as async from "jsr:@std/async";
+
 export abstract class RealTimeApp {
   /** Called at each iteration of the game loop. Used to update real-time application state. */
   abstract tick(tick: Tick): void;
@@ -15,6 +18,8 @@ export default class RenderLoop {
   private _frames = 0;
   private _frameCounter = 0;
   private _isRunning = false;
+  private _stopIfRunning = () => this._isRunning ? this.stop() : null;
+  private _finished: PromiseWithResolvers<void> | null = null;
 
   /** @param frameRate Deisred frame rate, in hertz. */
   constructor(frameRate: number, readonly app?: RealTimeApp) {
@@ -25,6 +30,15 @@ export default class RenderLoop {
     return this._isRunning;
   }
 
+  /** Resolves when this reder loop is stopped. */
+  get finished(): Promise<void> {
+    if (this._finished === null) {
+      assert(this._isRunning === false);
+      return Promise.resolve();
+    }
+    return this._finished.promise;
+  }
+
   /** @returns The current measures frames per second, in hertz. */
   get fps(): number {
     return this._frames;
@@ -33,12 +47,24 @@ export default class RenderLoop {
   start(): RenderLoop {
     if (this._isRunning) return this;
     this._isRunning = true;
+    this._finished = Promise.withResolvers();
     const startupTime = performance.now() / 1000;
 
     let lastTime = performance.now();
     let unprocessedTime = 0;
 
-    const loop = () => {
+    /**
+     * Iterate this render loop at the end of the current event loop iteration.
+     * @returns A `Promise` that resolves when this render loop finishes.
+     */
+    const enqueueLoop = (): Promise<void> => {
+      if (this._isRunning) queueMicrotask(loop);
+      else this._finished?.resolve();
+
+      return this.finished;
+    };
+
+    const loop = async (): Promise<void> => {
       let shouldRender = false;
       const startTime = performance.now() / 1000;
       const passedTime = startTime - lastTime;
@@ -52,40 +78,41 @@ export default class RenderLoop {
         unprocessedTime -= this._frameTime;
       }
 
-      if (!shouldRender) /* Sleep for 1 millisecond. */ setTimeout(loop, 1);
-      else {
-        const tick = new Tick(this._frameTime, passedTime, startupTime);
-        globalThis.dispatchEvent(
-          new CustomEvent("tick", {
-            cancelable: false,
-            detail: tick,
-          }),
-        );
+      // Delay the render loop for 1 millisecond
+      if (!shouldRender) return async.delay(1).then(enqueueLoop);
 
-        this.app?.tick(tick);
-        this.app?.render();
+      // Otherwise, tick the render loop
+      const tick = new Tick(this._frameTime, passedTime, startupTime);
+      globalThis.dispatchEvent(
+        new CustomEvent("tick", {
+          cancelable: false,
+          detail: tick,
+        }),
+      );
 
-        // Calculate frame rate
-        if (this._frameCounter >= 1) {
-          this._frames = 0;
-          this._frameCounter = 0;
-        }
-        this._frames += 1;
+      this.app?.tick(tick);
+      this.app?.render();
+
+      // Calculate frame rate
+      if (this._frameCounter >= 1) {
+        this._frames = 0;
+        this._frameCounter = 0;
       }
+      this._frames += 1;
 
-      // Iterate the loop at the end of the current event loop iteration
-      if (this._isRunning) queueMicrotask(loop);
+      await enqueueLoop();
     };
 
     // Start the loop
-    queueMicrotask(loop);
+    enqueueLoop();
 
     return this;
   }
 
-  stop(): RenderLoop {
+  /** @returns A `Promise` that resolves when this render loop finishes. */
+  stop(): Promise<void> {
     this._isRunning = false;
-    return this;
+    return this.finished;
   }
 }
 
