@@ -192,7 +192,7 @@ export default class RenderLoop {
       const tick = new Tick(this._frameTime, passedTime, startupTime);
       globalThis.dispatchEvent(new CustomEvent("tick", { cancelable: false, detail: tick }));
       this.app?.tick(tick);
-      this.app?.render();
+      if (typeof this.app?.render === "function") this.app?.render();
 
       // Calculate frame rate
       if (this._frameCounter >= 1) {
