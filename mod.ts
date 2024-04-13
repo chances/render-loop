@@ -1,6 +1,7 @@
 import { assert } from "jsr:@std/assert@0.222.1";
 import * as async from "jsr:@std/async@0.222.1";
 
+/** An application that renders scenes in real-time. */
 export abstract class RealTimeApp {
   /** Called at each iteration of the game loop. Used to update real-time application state. */
   abstract tick(tick: Tick): void;
@@ -36,11 +37,12 @@ export default class RenderLoop {
     Deno.addSignalListener("SIGINT", this._stopIfRunning);
   }
 
+  /** @returns Whether this render loop is running. */
   get isRunning(): boolean {
     return this._isRunning;
   }
 
-  /** Resolves when this reder loop is stopped. */
+  /** Resolves when this render loop is stopped. */
   get finished(): Promise<void> {
     if (this._finished === null) {
       assert(this._isRunning === false);
@@ -54,6 +56,7 @@ export default class RenderLoop {
     return this._frames;
   }
 
+  /** Start this render loop. */
   start(): RenderLoop {
     if (this._isRunning) return this;
     this._isRunning = true;
@@ -119,7 +122,9 @@ export default class RenderLoop {
     return this;
   }
 
-  /** @returns A `Promise` that resolves when this render loop finishes. */
+  /** Stop this render loop.
+   * @returns A `Promise` that resolves when this render loop finishes.
+   */
   stop(): Promise<void> {
     if (Deno.build.os !== "windows") Deno.removeSignalListener("SIGTERM", this._stopIfRunning);
     Deno.removeSignalListener("SIGINT", this._stopIfRunning);

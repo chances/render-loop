@@ -1,7 +1,9 @@
 {
+  "$schema": "https://github.com/denoland/deno/raw/v1.41.0/cli/schemas/config-file.v1.json",
   "name": "@chances/render-loop",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "exports": "./mod.ts",
+  "description": "A generic and reusable render loop for applications and games.",
   "tasks": {
     "lint": "deno lint",
     "test": "deno test ./test/mod.ts --trace-leaks"
