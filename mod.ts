@@ -10,6 +10,12 @@ export abstract class RealTimeApp {
 
 /**
  * Manages an application's main render loop.
+ * 
+ * A render loop is automatically stopped when the Deno process receives the
+ * `SIGTERM` or `SIGINT` signal (@see `Deno.Signal`).
+ * 
+ * _Note_: On Windows only `"SIGINT"` (CTRL+C) is listened to.
+ *
  * @see [Game Loop](http://gameprogrammingpatterns.com/game-loop.html) (Game Programming Patterns)
  * @remarks Adapted from the [`render_loop`](https://www.shardbox.org/shards/render_loop) Crystal library.
  */
@@ -24,6 +30,10 @@ export default class RenderLoop {
   /** @param frameRate Deisred frame rate, in hertz. */
   constructor(frameRate: number, readonly app?: RealTimeApp) {
     this._frameTime = 1 / frameRate;
+
+    // Ensure this render loop is stopped when the app stops
+    if (Deno.build.os !== "windows") Deno.addSignalListener("SIGTERM", this._stopIfRunning);
+    Deno.addSignalListener("SIGINT", this._stopIfRunning);
   }
 
   get isRunning(): boolean {
@@ -111,6 +121,9 @@ export default class RenderLoop {
 
   /** @returns A `Promise` that resolves when this render loop finishes. */
   stop(): Promise<void> {
+    if (Deno.build.os !== "windows") Deno.removeSignalListener("SIGTERM", this._stopIfRunning);
+    Deno.removeSignalListener("SIGINT", this._stopIfRunning);
+
     this._isRunning = false;
     return this.finished;
   }
