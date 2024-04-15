@@ -1,4 +1,4 @@
-import { assertEquals, assertGreater, assertGreaterOrEqual, assertInstanceOf } from "jsr:@std/assert";
+import { assertEquals, assertGreater, assertInstanceOf } from "jsr:@std/assert";
 import * as async from "jsr:@std/async";
 import { spy } from "https://deno.land/x/mock@0.15.2/mod.ts";
 
@@ -11,6 +11,19 @@ Deno.test(async function isRunningTest() {
   assertEquals(loop.isRunning, false);
 });
 
+Deno.test(async function appTickHandler() {
+  const tick = spy((tick: Tick) => {
+    assertGreater(tick.frameTime, 0);
+  });
+  const loop = new RenderLoop(60, { tick });
+  assertEquals(tick.calls.length, 0, "Tick handler has been called more than expected.");
+
+  loop.start();
+  await async.delay(100);
+  await loop.stop();
+  assertGreater(tick.calls.length, 2, "Tick handler has been called less than expected.");
+});
+
 Deno.test(async function tickEventListener() {
   const loop = new RenderLoop(60);
   const tick = spy((ev: Event) => {
@@ -21,7 +34,7 @@ Deno.test(async function tickEventListener() {
   assertEquals(tick.calls.length, 0, "Tick handler has been called more than expected.");
 
   loop.start();
-  await async.delay(20);
+  await async.delay(100);
   await loop.stop();
-  assertGreaterOrEqual(tick.calls.length, 1, "Tick handler has been called less than expected.");
+  assertGreater(tick.calls.length, 2, "Tick handler has been called less than expected.");
 });
