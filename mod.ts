@@ -119,6 +119,7 @@ export default class RenderLoop {
   private _frameTime: number;
   private _frames = 0;
   private _frameCounter = 0;
+  private _startupTime: number | null = null;
   private _isRunning = false;
   private _stopIfRunning = () => this._isRunning ? this.stop() : null;
   private _finished: PromiseWithResolvers<void> | null = null;
@@ -146,6 +147,11 @@ export default class RenderLoop {
     return this._finished.promise;
   }
 
+  /** @returns The time this render loop started, from Deno's start in seconds, or `null` if this render loop is stopped. */
+  get startupTime(): number | null {
+    return this._startupTime;
+  }
+
   /** @returns The current measures frames per second, in hertz. */
   get fps(): number {
     return this._frames;
@@ -157,7 +163,7 @@ export default class RenderLoop {
     this._isRunning = true;
     this._finished = Promise.withResolvers();
 
-    const startupTime = (performance as Performance).nowSeconds();
+    const startupTime = this._startupTime = (performance as Performance).nowSeconds();
     let lastTime = startupTime;
     let unprocessedTime = (0 as unknown as Number).seconds;
 
@@ -218,6 +224,7 @@ export default class RenderLoop {
     Deno.removeSignalListener("SIGINT", this._stopIfRunning);
 
     this._isRunning = false;
+    this._startupTime = null;
     return this.finished;
   }
 }

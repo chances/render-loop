@@ -5,8 +5,12 @@ import { spy } from "https://deno.land/x/mock@0.15.2/mod.ts";
 import RenderLoop, { type Tick } from "../mod.ts";
 
 Deno.test(async function isRunningTest() {
+  const startedAt = performance.now() / 1000;
   const loop = new RenderLoop(60);
+
   assertEquals(loop.start().isRunning, true);
+  await async.delay(100);
+  assertGreater(loop.startupTime, startedAt, "The render loop's startup time is not advancing.");
   await loop.stop();
   assertEquals(loop.isRunning, false);
 });
